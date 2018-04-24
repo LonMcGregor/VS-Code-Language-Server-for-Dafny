@@ -1,5 +1,5 @@
 "use strict";
-import { Disposable, TextDocument } from "vscode-languageserver";
+import { Disposable, TextDocument, Position } from "vscode-languageserver";
 import Uri from "vscode-uri";
 import { Context } from "../backend/context";
 import { DafnyCompiler } from "../backend/dafnyCompiler";
@@ -73,6 +73,40 @@ export class DafnyServerProvider {
     public doVerify(textDocument: TextDocument): void {
         if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
             this.dafnyServer.addDocument(textDocument, DafnyVerbs.Verify);
+        }
+    }
+
+    /**
+     * Toggle evaluation of tactics
+     * @remarks this will queue a request to toggle tactics - it wont happen immediately
+     * @param textDocument The current text document
+     */
+    public toggleTacticsEval(textDocument: TextDocument): void {
+        if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
+            this.dafnyServer.addDocument(textDocument, DafnyVerbs.TacticsToggle);
+        }
+    }
+
+    /**
+     * expand a tactic in a dafny method
+     * @param textDocument The current text document
+     * @param position The position of the tactic to expand
+     */
+    public doTacticsExpand(textDocument: TextDocument, position: Position): void {
+        const line: number = position.line;
+        const col: number = position.character;
+        if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
+            this.dafnyServer.addDocumentForTactics(textDocument, line, col);
+        }
+    }
+
+    /**
+     * run a check for dead annotations
+     * @param textDocument The current text document
+     */
+    public doDeadAnnotationCheck(textDocument: TextDocument): void {
+        if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
+            this.dafnyServer.addDocument(textDocument, DafnyVerbs.DeadAnnotationCheck);
         }
     }
 

@@ -31,3 +31,18 @@ export function decodeBase64(task: string): any {
     }
     return JSON.parse(ret);
 }
+
+/**
+ * Decode a base64 encoded string to a regular one.
+ * @remarks It might have been encoded to ease issues with quotes or special characters
+ * @param task a string, encoded in base64
+ * @returns the decoded string
+ */
+export function decodeBase64String(task: string): string {
+    const byteArray = b64.toByteArray(task.trim());
+    let ret = "";
+    for(const byte of byteArray) {
+        ret += String.fromCharCode(byte);
+    }
+    return ret;
+}

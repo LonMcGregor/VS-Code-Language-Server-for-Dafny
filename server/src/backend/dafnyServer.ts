@@ -8,7 +8,7 @@ import { NotificationService } from "../notificationService";
 import { ProcessWrapper } from "../process/process";
 import { encodeBase64 } from "../strings/stringEncoding";
 import {
-    DafnyVerbs, ErrorMsg, InfoMsg, ServerStatus, StatusString, WarningMsg
+    DafnyVerbs, ErrorMsg, InfoMsg, ServerStatus, StatusString, WarningMsg, EnvironmentConfig
 } from "../strings/stringRessources";
 import { Context } from "./context";
 import { DafnySettings } from "./dafnySettings";
@@ -79,6 +79,20 @@ export class DafnyServer {
         this.sendNextRequest();
     }
 
+    /**
+     * Queue a document to the dafny server for tactcs expansion
+     * @param doc the vscode document that is being sent to dafny
+     * @param line numberto expand the tactic at
+     * @param col number to expand the tactic at
+     */
+    public addDocumentForTactics(doc: vscode.TextDocument, line: number, col: number): void {
+        const request: VerificationRequest = new VerificationRequest(doc.getText(), doc, DafnyVerbs.TacticsExpand, null, null);
+        request.args = [""+line, ""+col];
+        this.context.enqueueRequest(request);
+        this.notificationService.sendQueueSize(this.context.queue.size());
+        this.sendNextRequest();
+    }
+
     public setInactive(): void {
         this.active = false;
     }
@@ -115,11 +129,24 @@ export class DafnyServer {
         this.sendNextRequest();
     }
 
+
+    /**
+     * Check if a verb is expected to be associated with a verification request
+     * @param verb The verb from the request to be completed
+     * @returns Whether or not the verb is one we expect
+     */
+    private isVerificationVerb(verb: string): boolean {
+        return verb === DafnyVerbs.CounterExample
+            || verb === DafnyVerbs.Verify
+            || verb === DafnyVerbs.TacticsExpand
+            || verb === DafnyVerbs.TacticsToggle
+            || verb === DafnyVerbs.DeadAnnotationCheck;
+    }
+
     private handleProcessData(): void {
         if (this.isRunning() && this.serverProc.commandFinished()) {
             const log: string = this.serverProc.outBuf.substr(0, this.serverProc.positionCommandEnd());
-            if (this.context.activeRequest && (this.context.activeRequest.verb === DafnyVerbs.CounterExample
-                || this.context.activeRequest.verb === DafnyVerbs.Verify)) {
+            if (this.context.activeRequest && this.isVerificationVerb(this.context.activeRequest.verb)) {
                 const result = this.context.collectRequest(log);
                 this.notificationService.sendVerificationResult([this.context.activeRequest.document.uri.toString(),
                 JSON.stringify(result)]);
@@ -195,8 +222,10 @@ export class DafnyServer {
         if (request.verb === DafnyVerbs.CounterExample || request.verb === DafnyVerbs.Verify) {
             this.statusbar.changeServerStatus(StatusString.Verifying);
         }
+        const hasArgumentsDefined: boolean = request.args !== undefined && request.args !== null;
+        const verificationArgs = hasArgumentsDefined ? request.args : [];
         const task: IVerificationTask = {
-            args: [],
+            args: verificationArgs,
             filename: Uri.parse(request.document.uri).fsPath,
             source: request.source,
             sourceIsFile: false

@@ -77,6 +77,13 @@ export class EnvironmentConfig {
     public static SymbolEnd: string = " SYMBOLS_END";
     public static CounterExampleStart: string = "COUNTEREXAMPLE_START ";
     public static CounterExampleEnd: string = " COUNTEREXAMPLE_END";
+    public static TacticsReportStart: string = "TACTICS_START ";
+    public static TacticsReportEnd: string = " TACTICS_END";
+    public static ExpandedTacticStart:string = "EXPANDED_TACTIC ";
+    public static ExpandedTacticEnd:string = " EXPANDED_TACTIC_END";
+    public static DeadAnnotationsStart:string = "DEAD_ANNOTATIONS ";
+    public static DeadAnnotationsEnd:string = " DEAD_ANNOTATIONS_END";
+    public static TacticVerificationEnabled:string = "tacticVerificationEnabled=";
 }
 export class StatusString {
     public static Crashed: string = "$(alert) Crashed";
@@ -113,6 +120,9 @@ export class LanguageServerNotification {
     public static Ready: string = "ready";
     public static Progress: string = "progress";
     public static CounterExample: string = "counterExample";
+    public static TacticsToggle: string = "tacticsToggle";
+    public static TacticsExpand: string = "tacticsExpand";
+    public static DeadAnnotationCheck: string = "deadAnnotationCheck";
 }
 
 export class DafnyReports {
@@ -135,6 +145,9 @@ export class DafnyVerbs {
     public static Symbols: string = "symbols";
     public static CounterExample: string = "counterExample";
     public static Verify: string = "verify";
+    public static TacticsToggle: string = "tacticsToggle";
+    public static TacticsExpand: string = "tacticsExpand";
+    public static DeadAnnotationCheck: string = "deadAnnotationCheck";
 }
 
 export class SymbolString {

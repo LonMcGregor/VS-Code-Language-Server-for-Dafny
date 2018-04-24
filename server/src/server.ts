@@ -4,7 +4,7 @@ import {
     CodeActionParams, CodeLens, CodeLensParams,
     createConnection, IConnection, InitializeResult, IPCMessageReader,
     IPCMessageWriter, Location, RenameParams, TextDocument,
-    TextDocumentItem, TextDocumentPositionParams, TextDocuments, TextDocumentSyncKind, WorkspaceEdit
+    TextDocumentItem, TextDocumentPositionParams, TextDocuments, TextDocumentSyncKind, WorkspaceEdit, Position
 } from "vscode-languageserver";
 import Uri from "vscode-uri";
 import { CompilerResult } from "./backend/dafnyCompiler";
@@ -268,6 +268,59 @@ connection.onNotification(LanguageServerNotification.CounterExample, (json: stri
         textDocumentItem.version, textDocumentItem.text);
     if (provider) {
         provider.doCounterExample(textDocument);
+    }
+});
+
+/**
+ * Recieve a request to toggle tactics
+ * @param json string representation of the active text document
+ */
+connection.onNotification(LanguageServerNotification.TacticsToggle, (json: string) => {
+    const textDocumentItem: TextDocumentItem = JSON.parse(json);
+    const textDocument: TextDocument = TextDocument.create(
+        textDocumentItem.uri,
+        textDocumentItem.languageId,
+        textDocumentItem.version,
+        textDocumentItem.text
+    );
+    if (provider) {
+        provider.toggleTacticsEval(textDocument);
+    }
+});
+
+/**
+ * Expand the specified tactic
+ * @param json string with document to use and a position to expand a tactic
+ */
+connection.onNotification(LanguageServerNotification.TacticsExpand, (json: string) => {
+    const taskJson: any = JSON.parse(json);
+    const textDocumentItem: TextDocumentItem = taskJson.document;
+    const position: Position = taskJson.position;
+    const textDocument: TextDocument = TextDocument.create(
+        textDocumentItem.uri,
+        textDocumentItem.languageId,
+        textDocumentItem.version,
+        textDocumentItem.text
+    );
+    if (provider) {
+        provider.doTacticsExpand(textDocument, position);
+    }
+});
+
+/**
+ * Run the dead annotation checker
+ * @param json string containing the text document to analyse
+ */
+connection.onNotification(LanguageServerNotification.DeadAnnotationCheck, (json: string) => {
+    const textDocumentItem: TextDocumentItem = JSON.parse(json);
+    const textDocument: TextDocument = TextDocument.create(
+        textDocumentItem.uri,
+        textDocumentItem.languageId,
+        textDocumentItem.version,
+        textDocumentItem.text
+    );
+    if (provider) {
+        provider.doDeadAnnotationCheck(textDocument);
     }
 });
 

@@ -8,6 +8,7 @@ export class VerificationRequest {
     public timeCreated: number;
     public timeSent: number = 0;
     public timeFinished: number = 0;
+    public args: string[];
 
     constructor(public source: string, public document: TextDocument, public verb: string,
                 public callback: ((data: any) => any), public error: ((data: any) => any)) {

@@ -73,6 +73,19 @@ export class DafnyClientProvider {
             vscode.commands.registerCommand(Commands.HideCounterExample, () => {
                 this.hideCounterModel(vscode.window.activeTextEditor.document);
             });
+
+            vscode.commands.registerCommand(Commands.ToggleTacticVerification, () => {
+                this.toggleTacticVerification(vscode.window.activeTextEditor.document);
+            });
+
+            vscode.commands.registerCommand(Commands.ExpandThisTactic, () => {
+                this.expandThisTactic(vscode.window.activeTextEditor);
+            });
+
+            vscode.commands.registerCommand(Commands.CheckDeadAnnotations, () => {
+                this.checkDeadAnnotations(vscode.window.activeTextEditor.document);
+            });
+
         } catch (e) {
             if(e.message === "command 'dafny.showDotGraph' already exists"){
                 /* The commands have already been added, we are just restarting the dafnyserver */
@@ -85,6 +98,45 @@ export class DafnyClientProvider {
         vscode.workspace.onDidChangeConfiguration(this.loadConfig, that);
 
         if (Context.unitTest) { Context.unitTest.activated(); };
+    }
+
+    /**
+     * Toggle the verification of tactics in dafnyserver
+     * @param activeDocument the currently active text editor document
+     */
+    public toggleTacticVerification(activeDocument: vscode.TextDocument): void{
+        this.sendDocument(activeDocument, LanguageServerNotification.TacticsToggle);
+    }
+
+    /**
+     * Find the position of the cursor and expand the tactic below it
+     * @param activeEditor The currently active editor
+     */
+    public expandThisTactic(activeEditor: vscode.TextEditor): void{
+        const zeroPosition: vscode.Position = activeEditor.selection.active;
+        const position = zeroPosition.translate(1, 1);
+        const textDocument: vscode.TextDocument = activeEditor.document;
+        if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
+            this.context.localQueue.add(textDocument.uri.toString());
+            const tditem = JSON.stringify({
+                document: TextDocumentItem.create(
+                    textDocument.uri.toString(),
+                    textDocument.languageId,
+                    textDocument.version,
+                    textDocument.getText()
+                ),
+                position: position
+            });
+            this.languageServer.sendNotification(LanguageServerNotification.TacticsExpand, tditem);
+        }
+    }
+
+    /**
+     * Run the Dead annotation removal tool on the document
+     * @param activeDocument The currently active text document
+     */
+    public checkDeadAnnotations(activeDocument: vscode.TextDocument): void{
+        this.sendDocument(activeDocument, LanguageServerNotification.DeadAnnotationCheck);
     }
 
     public dispose(): void {

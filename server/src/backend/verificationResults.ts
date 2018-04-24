@@ -7,6 +7,8 @@ import { NotificationService } from "../notificationService";
 import { Verification } from "../strings/regexRessources";
 import { EnvironmentConfig, Severity } from "../strings/stringRessources";
 import { VerificationRequest } from "./verificationRequest";
+import { parse } from "path";
+import { decodeBase64String } from "../strings/stringEncoding";
 
 export enum VerificationStatus {
     Verified = 0,
@@ -44,6 +46,103 @@ export class VerificationResults {
         }
     }
 
+    /**
+     * Parse a special json report form log and fill in the diags.
+     *
+     * @param log Output from DafnyServer.exe
+     * @param diags An initialized diagnostics list
+     * @param errorCount total number of errors encountered
+     * @param specialReportingStart the token delimiting the start of the reporting to analyse
+     * @param specialReportingEnd the token delimiting the end of the reporting to analyse
+     * @param reportMethod a specified method for analysing a report
+     * @returns the newly updated error count
+     */
+    private parseSpecialReporting(log:string, diags: vscode.Diagnostic[], errorCount:number,
+         specialReportingStart: string, specialReportingEnd:string, reportMethod:(any)=>vscode.Diagnostic):number{
+        if(log.indexOf(specialReportingStart) > -1) {
+            const startOfReport: number = log.indexOf(specialReportingStart) + specialReportingStart.length;
+            const endOfReport: number = log.indexOf(specialReportingEnd);
+            const info: string = log.substring(startOfReport, endOfReport);
+            try {
+                const parsedJson: any = JSON.parse(info);
+                if(parsedJson != []){
+                    parsedJson.forEach(reportInfo => {
+                        errorCount++;
+                        diags.push(reportMethod(reportInfo));
+                    });
+                }
+            } catch(exception) {
+                console.error("Failure  to parse response: " + exception + ", json: " + info);
+                return null;
+            }
+        }
+        return errorCount;
+    }
+
+    /**
+     * Parse a reportInfo json object from DARe
+     * @param reportInfo the JSON report info from the dare report
+     * @returns an appropriate diagnostic report for DARe
+     */
+    private parseDareReport(reportInfo): vscode.Diagnostic{
+        const diagPositionStart: vscode.Position = vscode.Position.create(reportInfo["line"], reportInfo["col"]);
+        const diagPositionEnd: vscode.Position = vscode.Position.create(reportInfo["line"], reportInfo["col"]+reportInfo["Length"]);
+        const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
+        const dareMsg: string = decodeBase64String(reportInfo["Replacement64"]);;
+        const diagMsg: string = dareMsg === "" ? "Statement can be removed" : dareMsg;
+        return vscode.Diagnostic.create(range, diagMsg, vscode.DiagnosticSeverity.Warning, "dare", "Dafny VSCode");
+    }
+
+    /**
+     * Parse a reportInfo json object from Tactics
+     * @param reportInfo the JSON report info from the tactics report
+     * @returns an appropriate diagnostic report for Tactics
+     */
+    private parseTacticReport(reportInfo): vscode.Diagnostic{
+        const diagPositionStart: vscode.Position = vscode.Position.create(reportInfo["Tok"]["line"], reportInfo["Tok"]["col"]);
+        const diagPositionEnd: vscode.Position = vscode.Position.create(reportInfo["Tok"]["line"], reportInfo["Tok"]["col"]+1);
+        const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
+        const diagMsg: string = reportInfo["Msg"];
+        return vscode.Diagnostic.create(range, diagMsg, vscode.DiagnosticSeverity.Error, "tactics", "Dafny VSCode");
+    }
+
+    /**
+     * Get the expanded tactic from the report log and add it as an informational diag message
+     * @param log Output from DafnyServer.exe
+     * @param diags An initialized diagnostics list
+     */
+    private parseExpandedTactic(log:string, diags: vscode.Diagnostic[]): void{
+        if(log.indexOf(EnvironmentConfig.ExpandedTacticStart) > -1) {
+            const startOfReport: number = log.indexOf(EnvironmentConfig.ExpandedTacticStart) + EnvironmentConfig.ExpandedTacticStart.length;
+            const endOfReport: number = log.indexOf(EnvironmentConfig.ExpandedTacticEnd);
+            const expanded: string = log.substring(startOfReport, endOfReport);
+            const diagPositionStart: vscode.Position = vscode.Position.create(1, 1);
+            const diagPositionEnd: vscode.Position = vscode.Position.create(1, 2);
+            const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
+            let reportDiagnostic: vscode.Diagnostic = vscode.Diagnostic.create(range, expanded, vscode.DiagnosticSeverity.Information, "expanded tactic", "Dafny VSCode");
+            diags.push(reportDiagnostic);
+        }
+    }
+
+    /**
+     * If the state of tactic verification changed (on/off) add a diag message
+     * @param log Output from DafnyServer.exe
+     * @param diags An initialized diagnostics list
+     */
+    private parseTacticVerificationEnabled(log:string, diags: vscode.Diagnostic[]): void{
+        if(log.indexOf(EnvironmentConfig.TacticVerificationEnabled) > -1) {
+            const reportStart: number = log.indexOf(EnvironmentConfig.TacticVerificationEnabled);
+            const stateStart: number = reportStart+EnvironmentConfig.TacticVerificationEnabled.length;
+            const stateOfReporting: string = log.substring(stateStart, stateStart+1);
+            const status: string = "Tactics Verification " + (stateOfReporting==="T" ? "Enabled" : "Disabled");
+            const diagPositionStart: vscode.Position = vscode.Position.create(1, 1);
+            const diagPositionEnd: vscode.Position = vscode.Position.create(1, 2);
+            const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
+            let reportDiagnostic: vscode.Diagnostic = vscode.Diagnostic.create(range, status, vscode.DiagnosticSeverity.Information, "tactic verification status", "Dafny VSCode");
+            diags.push(reportDiagnostic);
+        }
+    }
+
     private parseVerifierLog(log: string, req: VerificationRequest): VerificationResult {
         const result: VerificationResult = new VerificationResult();
         const lines: string[] = log.split(EnvironmentConfig.NewLine);
@@ -66,6 +165,13 @@ export class VerificationResults {
                 severity: vscode.DiagnosticSeverity.Error, source: "Dafny VSCode"
             });
         }
+
+        errorCount = this.parseSpecialReporting(log, diags, errorCount,
+            EnvironmentConfig.TacticsReportStart, EnvironmentConfig.TacticsReportEnd, this.parseTacticReport);
+        errorCount = this.parseSpecialReporting(log, diags, errorCount,
+            EnvironmentConfig.DeadAnnotationsStart, EnvironmentConfig.DeadAnnotationsEnd, this.parseDareReport);
+        this.parseExpandedTactic(log, diags);
+        this.parseTacticVerificationEnabled(log, diags);
 
         // tslint:disable-next-line:forin
         for (const index in lines) {

@@ -54,6 +54,21 @@
                     "when": "editorTextFocus && editorLangId == dafny",
                     "command": "dafny.hideCounterExample",
                     "group": "7_Dafny@2"
+                },
+                {
+                    "when": "editorTextFocus && editorLangId == dafny",
+                    "command": "dafny.toggleTacticVerification",
+                    "group": "7_Dafny@7"
+                },
+                {
+                    "when": "editorTextFocus && editorLangId == dafny",
+                    "command": "dafny.expandThisTactic",
+                    "group": "7_Dafny@8"
+                },
+                {
+                    "when": "editorTextFocus && editorLangId == dafny",
+                    "command": "dafny.checkDeadAnnotations",
+                    "group": "7_Dafny@9"
                 }
             ]
         },
@@ -106,7 +121,8 @@
                 ],
                 "extensions": [
                     ".dfy",
-                    ".dfyi"
+                    ".dfyi",
+                    ".tacny"
                 ],
                 "configuration": "./language-configuration.json"
             }
@@ -188,6 +204,18 @@
             {
                 "command": "dafny.hideCounterExample",
                 "title": "Dafny: Hide CounterExample"
+            },
+            {
+                "command": "dafny.toggleTacticVerification",
+                "title": "Dafny: Toggle verification of tactics"
+            },
+            {
+                "command": "dafny.expandThisTactic",
+                "title": "Dafny: Show expansion of this tactic"
+            },
+            {
+                "command": "dafny.checkDeadAnnotations",
+                "title": "Dafny: Run check for dead annotations using DARe"
             }
         ]
     },

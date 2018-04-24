@@ -3,6 +3,12 @@
 	// List of configurations. Add new configurations or edit existing ones.
 	"configurations": [
 		{
+			"type": "node",
+			"request": "attach",
+			"name": "Attach to 6009",
+			"port": 6009,
+		},
+		{
 			"name": "Attach",
 			"type": "node",
 			"request": "attach",
