@@ -12,4 +12,5 @@ export class VerificationResult {
     public errorCount: number;
     public crashed: boolean = false;
     public counterModel: any;
+    public tacticsEnabled: boolean;
 };

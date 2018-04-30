@@ -22,6 +22,7 @@ export class VerificationResult {
     public errorCount: number;
     public crashed: boolean = false;
     public counterModel: any;
+    public tacticsEnabled: boolean;
 };
 
 export class VerificationResults {
@@ -125,22 +126,19 @@ export class VerificationResults {
     }
 
     /**
-     * If the state of tactic verification changed (on/off) add a diag message
+     * Check the state of tactic verification
      * @param log Output from DafnyServer.exe
      * @param diags An initialized diagnostics list
+     * @returns whether the tactic verification is enabled
      */
-    private parseTacticVerificationEnabled(log:string, diags: vscode.Diagnostic[]): void{
+    private parseTacticVerificationEnabled(log:string): boolean{
         if(log.indexOf(EnvironmentConfig.TacticVerificationEnabled) > -1) {
             const reportStart: number = log.indexOf(EnvironmentConfig.TacticVerificationEnabled);
             const stateStart: number = reportStart+EnvironmentConfig.TacticVerificationEnabled.length;
             const stateOfReporting: string = log.substring(stateStart, stateStart+1);
-            const status: string = "Tactics Verification " + (stateOfReporting==="T" ? "Enabled" : "Disabled");
-            const diagPositionStart: vscode.Position = vscode.Position.create(1, 1);
-            const diagPositionEnd: vscode.Position = vscode.Position.create(1, 2);
-            const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
-            let reportDiagnostic: vscode.Diagnostic = vscode.Diagnostic.create(range, status, vscode.DiagnosticSeverity.Information, "tactic verification status", "Dafny VSCode");
-            diags.push(reportDiagnostic);
+            return stateOfReporting==="T";
         }
+        return false;
     }
 
     private parseVerifierLog(log: string, req: VerificationRequest): VerificationResult {
@@ -171,7 +169,7 @@ export class VerificationResults {
         errorCount = this.parseSpecialReporting(log, diags, errorCount,
             EnvironmentConfig.DeadAnnotationsStart, EnvironmentConfig.DeadAnnotationsEnd, this.parseDareReport);
         this.parseExpandedTactic(log, diags);
-        this.parseTacticVerificationEnabled(log, diags);
+        result.tacticsEnabled = this.parseTacticVerificationEnabled(log);
 
         // tslint:disable-next-line:forin
         for (const index in lines) {

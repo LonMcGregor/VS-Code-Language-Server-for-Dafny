@@ -130,7 +130,8 @@ export class Statusbar {
         } else {
             response = StatusString.NotVerified;
         }
-        response += " | Proof Obligations: " + result.proofObligations + " | Errors: " + result.errorCount;
+        const tacticsMsg = " | Tactics " + (result.tacticsEnabled ? "On" : "Off");
+        response += " | Proof Obligations: " + result.proofObligations + " | Errors: " + result.errorCount + tacticsMsg;
 
         return response;
     }
