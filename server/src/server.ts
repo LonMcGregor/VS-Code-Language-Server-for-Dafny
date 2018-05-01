@@ -295,7 +295,7 @@ connection.onNotification(LanguageServerNotification.TacticsToggle, (json: strin
 connection.onNotification(LanguageServerNotification.TacticsExpand, (json: string) => {
     const taskJson: any = JSON.parse(json);
     const textDocumentItem: TextDocumentItem = taskJson.document;
-    const position: Position = taskJson.position;
+    const position: number = taskJson.position;
     const textDocument: TextDocument = TextDocument.create(
         textDocumentItem.uri,
         textDocumentItem.languageId,

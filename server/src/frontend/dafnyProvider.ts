@@ -92,11 +92,9 @@ export class DafnyServerProvider {
      * @param textDocument The current text document
      * @param position The position of the tactic to expand
      */
-    public doTacticsExpand(textDocument: TextDocument, position: Position): void {
-        const line: number = position.line;
-        const col: number = position.character;
+    public doTacticsExpand(textDocument: TextDocument, position: number): void {
         if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
-            this.dafnyServer.addDocumentForTactics(textDocument, line, col);
+            this.dafnyServer.addDocumentForTactics(textDocument, position);
         }
     }
 

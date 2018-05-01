@@ -114,7 +114,7 @@ export class DafnyClientProvider {
      */
     public expandThisTactic(activeEditor: vscode.TextEditor): void{
         const zeroPosition: vscode.Position = activeEditor.selection.active;
-        const position = zeroPosition.translate(1, 1);
+        const absolutePosition = activeEditor.document.offsetAt(zeroPosition);
         const textDocument: vscode.TextDocument = activeEditor.document;
         if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
             this.context.localQueue.add(textDocument.uri.toString());
@@ -125,7 +125,7 @@ export class DafnyClientProvider {
                     textDocument.version,
                     textDocument.getText()
                 ),
-                position: position
+                position: absolutePosition
             });
             this.languageServer.sendNotification(LanguageServerNotification.TacticsExpand, tditem);
         }

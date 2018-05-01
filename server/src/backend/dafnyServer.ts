@@ -82,12 +82,11 @@ export class DafnyServer {
     /**
      * Queue a document to the dafny server for tactcs expansion
      * @param doc the vscode document that is being sent to dafny
-     * @param line numberto expand the tactic at
-     * @param col number to expand the tactic at
+     * @param position number to expand the tactic at
      */
-    public addDocumentForTactics(doc: vscode.TextDocument, line: number, col: number): void {
+    public addDocumentForTactics(doc: vscode.TextDocument, position: number): void {
         const request: VerificationRequest = new VerificationRequest(doc.getText(), doc, DafnyVerbs.TacticsExpand, null, null);
-        request.args = [""+line, ""+col];
+        request.args = [""+position];
         this.context.enqueueRequest(request);
         this.notificationService.sendQueueSize(this.context.queue.size());
         this.sendNextRequest();
