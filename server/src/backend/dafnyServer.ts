@@ -16,6 +16,7 @@ import { Command } from "./environment";
 import { Environment } from "./environment";
 import { SymbolService } from "./features/symbolService";
 import { VerificationRequest } from "./verificationRequest";
+import { TacticsService } from "./features/tacticsService";
 
 // see DafnyServer/VerificationTask.cs in Dafny sources
 export interface IVerificationTask {
@@ -27,6 +28,7 @@ export interface IVerificationTask {
 
 export class DafnyServer {
     public symbolService: SymbolService;
+    private tacticsService: TacticsService;
     private MAX_RETRIES: number = 5;
     private active: boolean = false;
     private serverProc: ProcessWrapper;
@@ -35,6 +37,7 @@ export class DafnyServer {
     constructor(private notificationService: NotificationService, private statusbar: Statusbar,
                 private context: Context, private settings: DafnySettings) {
         this.symbolService = new SymbolService(this);
+        this.tacticsService = new TacticsService(this);
     }
 
     public reset(): boolean {
@@ -85,7 +88,17 @@ export class DafnyServer {
      * @param position number to expand the tactic at
      */
     public addDocumentForTactics(doc: vscode.TextDocument, position: number): void {
-        const request: VerificationRequest = new VerificationRequest(doc.getText(), doc, DafnyVerbs.TacticsExpand, null, null);
+        const request: VerificationRequest = new VerificationRequest(
+            doc.getText(),
+            doc,
+            DafnyVerbs.TacticsExpand,
+            (data:any) => {
+                this.tacticsService.handleProcessData(data, this.notificationService, this.context)
+            },
+            (data:any) => {
+                this.tacticsService.handleError(data, this.notificationService, this.context)
+            },
+        );
         request.args = [""+position];
         this.context.enqueueRequest(request);
         this.notificationService.sendQueueSize(this.context.queue.size());
@@ -131,13 +144,14 @@ export class DafnyServer {
 
     /**
      * Check if a verb is expected to be associated with a verification request
+     *   If so, then use the verification request callback
+     *   Otherwise, use a custom defined callback
      * @param verb The verb from the request to be completed
      * @returns Whether or not the verb is one we expect
      */
     private isVerificationVerb(verb: string): boolean {
         return verb === DafnyVerbs.CounterExample
             || verb === DafnyVerbs.Verify
-            || verb === DafnyVerbs.TacticsExpand
             || verb === DafnyVerbs.TacticsToggle
             || verb === DafnyVerbs.DeadAnnotationCheck;
     }

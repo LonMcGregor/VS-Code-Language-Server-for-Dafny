@@ -8,6 +8,7 @@ import { Statusbar } from "./dafnyStatusbar";
 import { DotGraphProvider } from "./dotGraphProvider";
 import { Commands, Config, EnvironmentConfig, LanguageServerNotification } from "./stringRessources";
 import { VerificationResult } from "./verificationResult";
+import { TacticProvider } from "./tacticProvider";
 
 export class DafnyClientProvider {
     public dafnyStatusbar: Statusbar;
@@ -16,6 +17,7 @@ export class DafnyClientProvider {
     private docChangeDelay: number = 0;
     private automaticShowCounterExample: boolean = false;
     private subscriptions: vscode.Disposable[];
+    private tacticProvider: TacticProvider;
 
     private counterModelProvider: CounterModelProvider;
     private context: Context;
@@ -37,6 +39,14 @@ export class DafnyClientProvider {
                 this.context.verificationResults[docPathName] = verificationResult;
                 this.dafnyStatusbar.update();
                 this.counterModelProvider.update();
+            });
+
+        this.tacticProvider = new TacticProvider(this.languageServer);
+        languageServer.onNotification(LanguageServerNotification.TacticsExpand,
+            (docPathName: string, json: string) => {
+                this.context.localQueue.remove(docPathName);
+                this.tacticProvider.handleExpandResponse(docPathName, JSON.parse(json));
+                this.dafnyStatusbar.update();
             });
     }
 
@@ -113,22 +123,8 @@ export class DafnyClientProvider {
      * @param activeEditor The currently active editor
      */
     public expandThisTactic(activeEditor: vscode.TextEditor): void{
-        const zeroPosition: vscode.Position = activeEditor.selection.active;
-        const absolutePosition = activeEditor.document.offsetAt(zeroPosition);
-        const textDocument: vscode.TextDocument = activeEditor.document;
-        if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
-            this.context.localQueue.add(textDocument.uri.toString());
-            const tditem = JSON.stringify({
-                document: TextDocumentItem.create(
-                    textDocument.uri.toString(),
-                    textDocument.languageId,
-                    textDocument.version,
-                    textDocument.getText()
-                ),
-                position: absolutePosition
-            });
-            this.languageServer.sendNotification(LanguageServerNotification.TacticsExpand, tditem);
-        }
+        this.context.localQueue.add(activeEditor.document.uri.toString());
+        this.tacticProvider.expand(activeEditor);
     }
 
     /**

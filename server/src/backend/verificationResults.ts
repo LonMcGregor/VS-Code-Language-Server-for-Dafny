@@ -108,24 +108,6 @@ export class VerificationResults {
     }
 
     /**
-     * Get the expanded tactic from the report log and add it as an informational diag message
-     * @param log Output from DafnyServer.exe
-     * @param diags An initialized diagnostics list
-     */
-    private parseExpandedTactic(log:string, diags: vscode.Diagnostic[]): void{
-        if(log.indexOf(EnvironmentConfig.ExpandedTacticStart) > -1) {
-            const startOfReport: number = log.indexOf(EnvironmentConfig.ExpandedTacticStart) + EnvironmentConfig.ExpandedTacticStart.length;
-            const endOfReport: number = log.indexOf(EnvironmentConfig.ExpandedTacticEnd);
-            const expanded: string = log.substring(startOfReport, endOfReport);
-            const diagPositionStart: vscode.Position = vscode.Position.create(1, 1);
-            const diagPositionEnd: vscode.Position = vscode.Position.create(1, 2);
-            const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
-            let reportDiagnostic: vscode.Diagnostic = vscode.Diagnostic.create(range, expanded, vscode.DiagnosticSeverity.Information, "expanded tactic", "Dafny VSCode");
-            diags.push(reportDiagnostic);
-        }
-    }
-
-    /**
      * Check the state of tactic verification
      * @param log Output from DafnyServer.exe
      * @param diags An initialized diagnostics list
@@ -168,7 +150,6 @@ export class VerificationResults {
             EnvironmentConfig.TacticsReportStart, EnvironmentConfig.TacticsReportEnd, this.parseTacticReport);
         errorCount = this.parseSpecialReporting(log, diags, errorCount,
             EnvironmentConfig.DeadAnnotationsStart, EnvironmentConfig.DeadAnnotationsEnd, this.parseDareReport);
-        this.parseExpandedTactic(log, diags);
         result.tacticsEnabled = this.parseTacticVerificationEnabled(log);
 
         // tslint:disable-next-line:forin

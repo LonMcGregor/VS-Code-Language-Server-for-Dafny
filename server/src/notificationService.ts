@@ -2,6 +2,7 @@
 
 import { IConnection, PublishDiagnosticsParams } from "vscode-languageserver";
 import { LanguageServerNotification } from "./strings/stringRessources";
+import { TacticExpansionResult } from "./backend/features/tacticsService";
 
 export class NotificationService {
     private lastProgress: number;
@@ -25,6 +26,14 @@ export class NotificationService {
 
     public sendVerificationResult(result: any): void {
         this.connection.sendNotification(LanguageServerNotification.VerificationResult, result);
+    }
+
+    /**
+     * Send the result of a request to expand tactics
+     * @param result array of the file uri, the tactic expansion result
+     */
+    public sendTacticsExpansionResult(result: any){
+        this.connection.sendNotification(LanguageServerNotification.TacticsExpand, result);
     }
 
     public sendServerStarted(information: any): void {
