@@ -30,10 +30,16 @@ export class NotificationService {
 
     /**
      * Send the result of a request to expand tactics
-     * @param result array of the file uri, the tactic expansion result
+     * @param result array of the file uri, json string of the tactic expansion result
      */
-    public sendTacticsExpansionResult(result: any){
-        this.connection.sendNotification(LanguageServerNotification.TacticsExpand, result);
+    public sendTacticsExpansionResult(result: any, isEdit: boolean){
+        if(isEdit){
+            this.connection.sendNotification(LanguageServerNotification.TacticsReplace, result);
+        } else {
+            this.connection.sendNotification(LanguageServerNotification.TacticsPreview, result);
+        }
+    }
+
     }
 
     public sendServerStarted(information: any): void {

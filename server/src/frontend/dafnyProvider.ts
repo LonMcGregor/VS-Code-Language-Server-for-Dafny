@@ -91,10 +91,21 @@ export class DafnyServerProvider {
      * expand a tactic in a dafny method
      * @param textDocument The current text document
      * @param position The position of the tactic to expand
+     * @param isEdit If this is for an edit or preview
      */
-    public doTacticsExpand(textDocument: TextDocument, position: number): void {
+    public doTacticsExpand(textDocument: TextDocument, position: number, isEdit: boolean): void {
         if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
-            this.dafnyServer.addDocumentForTactics(textDocument, position);
+            this.dafnyServer.addDocumentWithServerArguments(
+                textDocument,
+                DafnyVerbs.TacticsExpand,
+                [""+position],
+                (data:any) => {
+                    this.dafnyServer.tacticsService.handleProcessData(data, this.notificationService, this.context, isEdit)
+                },
+                (data:any) => {
+                    this.dafnyServer.tacticsService.handleError(data, this.notificationService, this.context)
+                },
+            )
         }
     }
 

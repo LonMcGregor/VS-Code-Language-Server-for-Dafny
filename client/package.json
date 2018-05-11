@@ -62,13 +62,18 @@
                 },
                 {
                     "when": "editorTextFocus && editorLangId == dafny",
-                    "command": "dafny.expandThisTactic",
+                    "command": "dafny.previewThisTactic",
                     "group": "7_Dafny@8"
                 },
                 {
                     "when": "editorTextFocus && editorLangId == dafny",
-                    "command": "dafny.checkDeadAnnotations",
+                    "command": "dafny.replaceThisTactic",
                     "group": "7_Dafny@9"
+                },
+                {
+                    "when": "editorTextFocus && editorLangId == dafny",
+                    "command": "dafny.checkDeadAnnotations",
+                    "group": "7_Dafny@10"
                 }
             ]
         },
@@ -210,8 +215,12 @@
                 "title": "Dafny: Toggle verification of tactics"
             },
             {
-                "command": "dafny.expandThisTactic",
-                "title": "Dafny: Show expansion of this tactic"
+                "command": "dafny.previewThisTactic",
+                "title": "Dafny: Show preview of this tactic when it gets expanded"
+            },
+            {
+                "command": "dafny.replaceThisTactic",
+                "title": "Dafny: Expand this tactic and replace the call"
             },
             {
                 "command": "dafny.checkDeadAnnotations",

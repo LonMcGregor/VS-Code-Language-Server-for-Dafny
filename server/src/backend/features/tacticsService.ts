@@ -31,8 +31,9 @@ export class TacticsService {
      * @param log The log returned from Dafnyserver.exe
      * @param notificationService for sending response back
      * @param context The context of the request
+     * @param isEdit if the requets was for an edit or preview
      */
-    public handleProcessData(log: string, notificationService: NotificationService, context: Context): void {
+    public handleProcessData(log: string, notificationService: NotificationService, context: Context, isEdit: boolean): void {
         const result = new TacticExpansionResult();
         if(log && log.indexOf(EnvironmentConfig.DafnySuccess) > 0 && log.indexOf(EnvironmentConfig.ExpandedTacticStart) > -1) {
             const startOfReport: number = log.indexOf(EnvironmentConfig.ExpandedTacticStart) + EnvironmentConfig.ExpandedTacticStart.length;
@@ -57,7 +58,7 @@ export class TacticsService {
                     break;
             }
         }
-        notificationService.sendTacticsExpansionResult([context.activeRequest.document.uri.toString(), JSON.stringify(result)]);
+        notificationService.sendTacticsExpansionResult([context.activeRequest.document.uri.toString(), JSON.stringify(result)], isEdit);
     }
 
     /**
@@ -69,6 +70,6 @@ export class TacticsService {
     public handleError(response: string, notificationService: NotificationService, context: Context): void {
         const result = new TacticExpansionResult();
         result.status = TacticExpanionStatus.TranslationFail;
-        notificationService.sendTacticsExpansionResult([context.activeRequest.document.uri.toString(), JSON.stringify(result)]);
+        notificationService.sendTacticsExpansionResult([context.activeRequest.document.uri.toString(), JSON.stringify(result)], false);
     }
 }

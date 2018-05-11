@@ -42,12 +42,19 @@ export class DafnyClientProvider {
             });
 
         this.tacticProvider = new TacticProvider(this.languageServer);
-        languageServer.onNotification(LanguageServerNotification.TacticsExpand,
+        languageServer.onNotification(LanguageServerNotification.TacticsPreview,
             (docPathName: string, json: string) => {
                 this.context.localQueue.remove(docPathName);
-                this.tacticProvider.handleExpandResponse(docPathName, JSON.parse(json));
+                this.tacticProvider.handleExpandResponse(docPathName, JSON.parse(json), false);
                 this.dafnyStatusbar.update();
             });
+        languageServer.onNotification(LanguageServerNotification.TacticsReplace,
+            (docPathName: string, json: string) => {
+                this.context.localQueue.remove(docPathName);
+                this.tacticProvider.handleExpandResponse(docPathName, JSON.parse(json), true);
+                this.dafnyStatusbar.update();
+            });
+
     }
 
     public activate(subs: vscode.Disposable[]): void {
@@ -88,8 +95,12 @@ export class DafnyClientProvider {
                 this.toggleTacticVerification(vscode.window.activeTextEditor.document);
             });
 
-            vscode.commands.registerCommand(Commands.ExpandThisTactic, () => {
-                this.expandThisTactic(vscode.window.activeTextEditor);
+            vscode.commands.registerCommand(Commands.PreviewhisTactic, () => {
+                this.previewThisTactic(vscode.window.activeTextEditor);
+            });
+
+            vscode.commands.registerCommand(Commands.ReplaceThisTactic, () => {
+                this.replaceThisTactic(vscode.window.activeTextEditor);
             });
 
             vscode.commands.registerCommand(Commands.CheckDeadAnnotations, () => {
@@ -119,12 +130,21 @@ export class DafnyClientProvider {
     }
 
     /**
-     * Find the position of the cursor and expand the tactic below it
+     * Find the position of the cursor and expand the tactic below it, previewing the result
      * @param activeEditor The currently active editor
      */
-    public expandThisTactic(activeEditor: vscode.TextEditor): void{
+    public previewThisTactic(activeEditor: vscode.TextEditor): void{
         this.context.localQueue.add(activeEditor.document.uri.toString());
-        this.tacticProvider.expand(activeEditor);
+        this.tacticProvider.preview(activeEditor);
+    }
+
+    /**
+     * Find the position of the cursor and expand the tactic below it, replacing the call
+     * @param activeEditor The currently active editor
+     */
+    public replaceThisTactic(activeEditor: vscode.TextEditor): void{
+        this.context.localQueue.add(activeEditor.document.uri.toString());
+        this.tacticProvider.replace(activeEditor);
     }
 
     /**

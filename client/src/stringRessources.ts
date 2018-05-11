@@ -47,7 +47,8 @@ export class Commands {
     public static ShowCounterExample: string = "dafny.showCounterExample";
     public static HideCounterExample: string = "dafny.hideCounterExample";
     public static ToggleTacticVerification: string = "dafny.toggleTacticVerification";
-    public static ExpandThisTactic: string = "dafny.expandThisTactic";
+    public static PreviewhisTactic: string = "dafny.previewThisTactic";
+    public static ReplaceThisTactic: string = "dafny.replaceThisTactic";
     public static CheckDeadAnnotations: string = "dafny.checkDeadAnnotations";
 }
 
@@ -115,6 +116,7 @@ export class LanguageServerNotification {
     public static Progress: string = "progress";
     public static CounterExample: string = "counterExample";
     public static TacticsToggle: string = "tacticsToggle";
-    public static TacticsExpand: string = "tacticsExpand";
+    public static TacticsPreview: string = "tacticsPreview";
+    public static TacticsReplace: string = "tacticsReplace";
     public static DeadAnnotationCheck: string = "deadAnnotationCheck";
 }

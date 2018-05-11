@@ -121,7 +121,8 @@ export class LanguageServerNotification {
     public static Progress: string = "progress";
     public static CounterExample: string = "counterExample";
     public static TacticsToggle: string = "tacticsToggle";
-    public static TacticsExpand: string = "tacticsExpand";
+    public static TacticsPreview: string = "tacticsPreview";
+    public static TacticsReplace: string = "tacticsReplace";
     public static DeadAnnotationCheck: string = "deadAnnotationCheck";
 }
 

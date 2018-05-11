@@ -289,10 +289,10 @@ connection.onNotification(LanguageServerNotification.TacticsToggle, (json: strin
 });
 
 /**
- * Expand the specified tactic
+ * Expand (for replace) the specified tactic
  * @param json string with document to use and a position to expand a tactic
  */
-connection.onNotification(LanguageServerNotification.TacticsExpand, (json: string) => {
+connection.onNotification(LanguageServerNotification.TacticsReplace, (json: string) => {
     const taskJson: any = JSON.parse(json);
     const textDocumentItem: TextDocumentItem = taskJson.document;
     const position: number = taskJson.position;
@@ -303,7 +303,26 @@ connection.onNotification(LanguageServerNotification.TacticsExpand, (json: strin
         textDocumentItem.text
     );
     if (provider) {
-        provider.doTacticsExpand(textDocument, position);
+        provider.doTacticsExpand(textDocument, position, true);
+    }
+});
+
+/**
+ * Expand (for preview) the specified tactic
+ * @param json string with document to use and a position to expand a tactic
+ */
+connection.onNotification(LanguageServerNotification.TacticsPreview, (json: string) => {
+    const taskJson: any = JSON.parse(json);
+    const textDocumentItem: TextDocumentItem = taskJson.document;
+    const position: number = taskJson.position;
+    const textDocument: TextDocument = TextDocument.create(
+        textDocumentItem.uri,
+        textDocumentItem.languageId,
+        textDocumentItem.version,
+        textDocumentItem.text
+    );
+    if (provider) {
+        provider.doTacticsExpand(textDocument, position, false);
     }
 });
 

@@ -28,7 +28,7 @@ export interface IVerificationTask {
 
 export class DafnyServer {
     public symbolService: SymbolService;
-    private tacticsService: TacticsService;
+    public tacticsService: TacticsService;
     private MAX_RETRIES: number = 5;
     private active: boolean = false;
     private serverProc: ProcessWrapper;
@@ -83,23 +83,16 @@ export class DafnyServer {
     }
 
     /**
-     * Queue a document to the dafny server for tactcs expansion
-     * @param doc the vscode document that is being sent to dafny
-     * @param position number to expand the tactic at
+     * Add a document request to send to DafnyServer.exe, and pass additional server arguments
+     * @param doc document object to send
+     * @param verb what kind of request to make
+     * @param serverArgs additional arguments to DafnyServer.exe
+     * @param callback callback method to respond when DafnyServer finishes
+     * @param error callback to make in case of error
      */
-    public addDocumentForTactics(doc: vscode.TextDocument, position: number): void {
-        const request: VerificationRequest = new VerificationRequest(
-            doc.getText(),
-            doc,
-            DafnyVerbs.TacticsExpand,
-            (data:any) => {
-                this.tacticsService.handleProcessData(data, this.notificationService, this.context)
-            },
-            (data:any) => {
-                this.tacticsService.handleError(data, this.notificationService, this.context)
-            },
-        );
-        request.args = [""+position];
+    public addDocumentWithServerArguments(doc: vscode.TextDocument, verb: string, serverArgs: string[], callback?: ((data: any) => any), error?: ((data: any) => any)): void{
+        const request: VerificationRequest = new VerificationRequest(doc.getText(), doc, verb, callback, error);
+        request.args = serverArgs;
         this.context.enqueueRequest(request);
         this.notificationService.sendQueueSize(this.context.queue.size());
         this.sendNextRequest();
@@ -152,8 +145,8 @@ export class DafnyServer {
     private isVerificationVerb(verb: string): boolean {
         return verb === DafnyVerbs.CounterExample
             || verb === DafnyVerbs.Verify
-            || verb === DafnyVerbs.TacticsToggle
             || verb === DafnyVerbs.DeadAnnotationCheck;
+            || verb === DafnyVerbs.TacticsToggle;
     }
 
     private handleProcessData(): void {
