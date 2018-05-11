@@ -19,7 +19,7 @@
         "vscode": "^1.15.0"
     },
     "categories": [
-        "Languages"
+        "Programming Languages"
     ],
     "main": "./out/src/extension",
     "contributes": {
