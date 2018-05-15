@@ -24,6 +24,9 @@ export const dafnyKeywords: string[] = [
     "select",
     "struct",
     "switch",
+    "tactic",
+    "tmatch",
+    "tvar",
     "type",
     "var"
 ];
