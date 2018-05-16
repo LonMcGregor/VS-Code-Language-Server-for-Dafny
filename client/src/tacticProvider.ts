@@ -61,7 +61,7 @@ export class TacticProvider {
                 ),
                 position: absolutePosition
             });
-            vscode.window.showInformationMessage(`Expanding the tactic at (${activeEditor.selection.active.line},${activeEditor.selection.active.character})`);
+            vscode.window.showInformationMessage(`Expanding the tactic at (${activeEditor.selection.active.line+1},${activeEditor.selection.active.character+1})`);
             this.languageServer.sendNotification(verb, tditem);
         } else {
             vscode.window.showWarningMessage("Can't expand the tactic at this position.");
