@@ -110,6 +110,25 @@ export class DafnyServerProvider {
     }
 
     /**
+     * expand all tactic in a dafny document
+     * @param textDocument The current text document
+     */
+    public doTacticsExpandAll(textDocument: TextDocument): void {
+        if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
+            this.dafnyServer.addDocument(
+                textDocument,
+                DafnyVerbs.TacticsExpandAll,
+                (data:any) => {
+                    this.dafnyServer.tacticsService.handleProcessData(data, this.notificationService, this.context, true)
+                },
+                (data:any) => {
+                    this.dafnyServer.tacticsService.handleError(data, this.notificationService, this.context)
+                },
+            )
+        }
+    }
+
+    /**
      * run a check for dead annotations
      * @param textDocument The current text document
      */

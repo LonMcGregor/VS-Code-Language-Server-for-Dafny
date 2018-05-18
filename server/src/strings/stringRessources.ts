@@ -123,6 +123,7 @@ export class LanguageServerNotification {
     public static TacticsToggle: string = "tacticsToggle";
     public static TacticsPreview: string = "tacticsPreview";
     public static TacticsReplace: string = "tacticsReplace";
+    public static TacticsReplaceAll: string = "tacticsReplaceAll";
     public static DeadAnnotationCheck: string = "deadAnnotationCheck";
 }
 
@@ -148,6 +149,7 @@ export class DafnyVerbs {
     public static Verify: string = "verify";
     public static TacticsToggle: string = "tacticsToggle";
     public static TacticsExpand: string = "tacticsExpand";
+    public static TacticsExpandAll: string = "tacticsExpandAll";
     public static DeadAnnotationCheck: string = "deadAnnotationCheck";
 }
 

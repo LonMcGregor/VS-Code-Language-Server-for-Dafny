@@ -72,8 +72,13 @@
                 },
                 {
                     "when": "editorTextFocus && editorLangId == dafny",
-                    "command": "dafny.checkDeadAnnotations",
+                    "command": "dafny.replaceAllTactics",
                     "group": "7_Dafny@10"
+                },
+                {
+                    "when": "editorTextFocus && editorLangId == dafny",
+                    "command": "dafny.checkDeadAnnotations",
+                    "group": "7_Dafny@11"
                 }
             ]
         },
@@ -221,6 +226,10 @@
             {
                 "command": "dafny.replaceThisTactic",
                 "title": "Dafny: Expand this tactic and replace the call"
+            },
+            {
+                "command": "dafny.replaceAllTactics",
+                "title": "Dafny: Expand all tactic calls in file"
             },
             {
                 "command": "dafny.checkDeadAnnotations",

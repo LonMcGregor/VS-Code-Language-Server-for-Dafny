@@ -103,6 +103,10 @@ export class DafnyClientProvider {
                 this.replaceThisTactic(vscode.window.activeTextEditor);
             });
 
+            vscode.commands.registerCommand(Commands.ReplaceAllTactics, () => {
+                this.replaceAllTactics(vscode.window.activeTextEditor);
+            });
+
             vscode.commands.registerCommand(Commands.CheckDeadAnnotations, () => {
                 this.checkDeadAnnotations(vscode.window.activeTextEditor.document);
             });
@@ -145,6 +149,15 @@ export class DafnyClientProvider {
     public replaceThisTactic(activeEditor: vscode.TextEditor): void{
         this.context.localQueue.add(activeEditor.document.uri.toString());
         this.tacticProvider.replace(activeEditor);
+    }
+
+    /**
+     * Expand all tactic calls in the active editor
+     * @param activeEditor The currently active editor
+     */
+    public replaceAllTactics(activeEditor: vscode.TextEditor): void{
+        this.context.localQueue.add(activeEditor.document.uri.toString());
+        this.tacticProvider.replaceAll(activeEditor);
     }
 
     /**

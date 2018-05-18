@@ -49,6 +49,7 @@ export class Commands {
     public static ToggleTacticVerification: string = "dafny.toggleTacticVerification";
     public static PreviewhisTactic: string = "dafny.previewThisTactic";
     public static ReplaceThisTactic: string = "dafny.replaceThisTactic";
+    public static ReplaceAllTactics: string = "dafny.replaceAllTactics";
     public static CheckDeadAnnotations: string = "dafny.checkDeadAnnotations";
 }
 
@@ -118,5 +119,6 @@ export class LanguageServerNotification {
     public static TacticsToggle: string = "tacticsToggle";
     public static TacticsPreview: string = "tacticsPreview";
     public static TacticsReplace: string = "tacticsReplace";
+    public static TacticsReplaceAll: string = "tacticsReplaceAll";
     public static DeadAnnotationCheck: string = "deadAnnotationCheck";
 }

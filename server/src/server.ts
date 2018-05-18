@@ -308,6 +308,24 @@ connection.onNotification(LanguageServerNotification.TacticsReplace, (json: stri
 });
 
 /**
+ * Expand (for replace) all the tactics in the file
+ * @param json string with document to use
+ */
+connection.onNotification(LanguageServerNotification.TacticsReplaceAll, (json: string) => {
+    const taskJson: any = JSON.parse(json);
+    const textDocumentItem: TextDocumentItem = taskJson.document;
+    const textDocument: TextDocument = TextDocument.create(
+        textDocumentItem.uri,
+        textDocumentItem.languageId,
+        textDocumentItem.version,
+        textDocumentItem.text
+    );
+    if (provider) {
+        provider.doTacticsExpandAll(textDocument);
+    }
+});
+
+/**
  * Expand (for preview) the specified tactic
  * @param json string with document to use and a position to expand a tactic
  */
