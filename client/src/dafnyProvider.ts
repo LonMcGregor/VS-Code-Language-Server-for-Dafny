@@ -9,6 +9,7 @@ import { DotGraphProvider } from "./dotGraphProvider";
 import { Commands, Config, EnvironmentConfig, LanguageServerNotification } from "./stringRessources";
 import { VerificationResult } from "./verificationResult";
 import { TacticProvider } from "./tacticProvider";
+import { DeadAnnotationProvider } from "./deadAnnotationProvider";
 
 export class DafnyClientProvider {
     public dafnyStatusbar: Statusbar;
@@ -18,6 +19,7 @@ export class DafnyClientProvider {
     private automaticShowCounterExample: boolean = false;
     private subscriptions: vscode.Disposable[];
     private tacticProvider: TacticProvider;
+    private deadAnnotationProvider: DeadAnnotationProvider;
 
     private counterModelProvider: CounterModelProvider;
     private context: Context;
@@ -55,6 +57,17 @@ export class DafnyClientProvider {
                 this.dafnyStatusbar.update();
             });
 
+        this.deadAnnotationProvider = new DeadAnnotationProvider();
+        languageServer.onNotification(LanguageServerNotification.DeadAnnotationCheck,
+            (docPathName: string, json: string) => {
+                this.context.localQueue.remove(docPathName);
+                this.deadAnnotationProvider.handleResponse(docPathName, JSON.parse(json));
+                this.dafnyStatusbar.update();
+            });
+        vsCodeContext.subscriptions.push(vscode.languages.registerCodeActionsProvider(
+            "dafny",
+            this.deadAnnotationProvider
+        ));
     }
 
     public activate(subs: vscode.Disposable[]): void {
@@ -165,6 +178,7 @@ export class DafnyClientProvider {
      * @param activeDocument The currently active text document
      */
     public checkDeadAnnotations(activeDocument: vscode.TextDocument): void{
+        this.context.localQueue.add(activeDocument.uri.toString());
         this.sendDocument(activeDocument, LanguageServerNotification.DeadAnnotationCheck);
     }
 

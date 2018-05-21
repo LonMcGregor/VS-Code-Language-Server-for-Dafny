@@ -101,10 +101,7 @@ export class DafnyServerProvider {
                 [""+position],
                 (data:any) => {
                     this.dafnyServer.tacticsService.handleProcessData(data, this.notificationService, this.context, isEdit)
-                },
-                (data:any) => {
-                    this.dafnyServer.tacticsService.handleError(data, this.notificationService, this.context)
-                },
+                }
             )
         }
     }
@@ -120,10 +117,7 @@ export class DafnyServerProvider {
                 DafnyVerbs.TacticsExpandAll,
                 (data:any) => {
                     this.dafnyServer.tacticsService.handleProcessData(data, this.notificationService, this.context, true)
-                },
-                (data:any) => {
-                    this.dafnyServer.tacticsService.handleError(data, this.notificationService, this.context)
-                },
+                }
             )
         }
     }
@@ -134,7 +128,13 @@ export class DafnyServerProvider {
      */
     public doDeadAnnotationCheck(textDocument: TextDocument): void {
         if (textDocument !== null && textDocument.languageId === EnvironmentConfig.Dafny) {
-            this.dafnyServer.addDocument(textDocument, DafnyVerbs.DeadAnnotationCheck);
+            this.dafnyServer.addDocument(
+                textDocument,
+                DafnyVerbs.DeadAnnotationCheck,
+                (data:any) => {
+                    this.dafnyServer.deadAnnotationService.handleProcessData(data, this.notificationService, this.context)
+                }
+            );
         }
     }
 

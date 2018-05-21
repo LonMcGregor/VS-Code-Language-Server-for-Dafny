@@ -96,17 +96,4 @@ export class TacticsService {
         }
         return result;
     }
-
-    /**
-     * The request failed. Respond based on this.
-     * @param response output from DafnyServer.exe
-     * @param notificationService for sending response back
-     * @param context The context of the request
-     */
-    public handleError(response: string, notificationService: NotificationService, context: Context): void {
-        const result = new TacticExpansionResult();
-        result.status = TacticExpanionStatus.UnexpectedFailure;
-        result.expansion = response;
-        notificationService.sendTacticsExpansionResult([context.activeRequest.document.uri.toString(), JSON.stringify(result)], false);
-    }
 }

@@ -81,20 +81,6 @@ export class VerificationResults {
     }
 
     /**
-     * Parse a reportInfo json object from DARe
-     * @param reportInfo the JSON report info from the dare report
-     * @returns an appropriate diagnostic report for DARe
-     */
-    private parseDareReport(reportInfo): vscode.Diagnostic{
-        const diagPositionStart: vscode.Position = vscode.Position.create(reportInfo["line"], reportInfo["col"]);
-        const diagPositionEnd: vscode.Position = vscode.Position.create(reportInfo["line"], reportInfo["col"]+reportInfo["Length"]);
-        const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
-        const dareMsg: string = decodeBase64String(reportInfo["Replacement64"]);;
-        const diagMsg: string = dareMsg === "" ? "Statement can be removed" : dareMsg;
-        return vscode.Diagnostic.create(range, diagMsg, vscode.DiagnosticSeverity.Warning, "dare", "Dafny VSCode");
-    }
-
-    /**
      * Parse a reportInfo json object from Tactics
      * @param reportInfo the JSON report info from the tactics report
      * @returns an appropriate diagnostic report for Tactics
@@ -148,8 +134,6 @@ export class VerificationResults {
 
         errorCount = this.parseSpecialReporting(log, diags, errorCount,
             EnvironmentConfig.TacticsReportStart, EnvironmentConfig.TacticsReportEnd, this.parseTacticReport);
-        errorCount = this.parseSpecialReporting(log, diags, errorCount,
-            EnvironmentConfig.DeadAnnotationsStart, EnvironmentConfig.DeadAnnotationsEnd, this.parseDareReport);
         result.tacticsEnabled = this.parseTacticVerificationEnabled(log);
 
         // tslint:disable-next-line:forin

@@ -17,6 +17,7 @@ import { Environment } from "./environment";
 import { SymbolService } from "./features/symbolService";
 import { VerificationRequest } from "./verificationRequest";
 import { TacticsService } from "./features/tacticsService";
+import { DeadAnnotationService } from "./features/deadAnnotationService";
 
 // see DafnyServer/VerificationTask.cs in Dafny sources
 export interface IVerificationTask {
@@ -29,6 +30,7 @@ export interface IVerificationTask {
 export class DafnyServer {
     public symbolService: SymbolService;
     public tacticsService: TacticsService;
+    public deadAnnotationService: DeadAnnotationService;
     private MAX_RETRIES: number = 5;
     private active: boolean = false;
     private serverProc: ProcessWrapper;
@@ -38,6 +40,7 @@ export class DafnyServer {
                 private context: Context, private settings: DafnySettings) {
         this.symbolService = new SymbolService(this);
         this.tacticsService = new TacticsService(this);
+        this.deadAnnotationService = new DeadAnnotationService(this);
     }
 
     public reset(): boolean {
@@ -145,7 +148,6 @@ export class DafnyServer {
     private isVerificationVerb(verb: string): boolean {
         return verb === DafnyVerbs.CounterExample
             || verb === DafnyVerbs.Verify
-            || verb === DafnyVerbs.DeadAnnotationCheck;
             || verb === DafnyVerbs.TacticsToggle;
     }
 
