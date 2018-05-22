@@ -34,22 +34,34 @@ export class DeadAnnotationProvider implements vscode.CodeActionProvider {
         }
         const commandList: vscode.Command[] = [];
         const resultsForFile = this.results[filename];
+        const workspaceEditAllAtOnce = new vscode.WorkspaceEdit();
         resultsForFile.forEach(result => {
             if(token.isCancellationRequested){return null;}
             const editStartPos = new vscode.Position(result.line-1, result.col-1);
             const editEndPos = editStartPos.translate(0, result.length);
             const editRange = new vscode.Range(editStartPos, editEndPos);
+            workspaceEditAllAtOnce.replace(vscode.Uri.file(document.fileName), editRange, result.replacement);
             if(actionRange.contains(editRange)){
                 const workspaceEdit = new vscode.WorkspaceEdit();
                 workspaceEdit.replace(vscode.Uri.file(document.fileName), editRange, result.replacement);
+                //@ts-ignore: TS Doesn't Recognise CodeAction, though it does exist
                 const codeAction = new vscode.CodeAction(
-                    "Fix Dead Annotations",
-                    vscode.CodeActionKind.QuickFix
+                    "Fix this Dead Annotation",
+                    //@ts-ignore: TS Doesn't Recognise CodeActionKind, though it does exist
+                    vscode.CodeActionKind.RefactorRewrite
                 )
                 codeAction.edit = workspaceEdit;
                 commandList.push(codeAction);
             }
         });
+        //@ts-ignore: TS Doesn't Recognise CodeAction, though it does exist
+        const codeActionAllAOnce = new vscode.CodeAction(
+            "Fix All Dead Annotations in File",
+            //@ts-ignore: TS Doesn't Recognise CodeActionKind, though it does exist
+            vscode.CodeActionKind.RefactorRewrite
+        )
+        codeActionAllAOnce.edit = workspaceEditAllAtOnce;
+        commandList.push(codeActionAllAOnce);
         if(token.isCancellationRequested){return null;}
         return commandList;
     }
@@ -71,8 +83,4 @@ export class DeadAnnotationProvider implements vscode.CodeActionProvider {
         }
         this.results[docPathName] = result;
     }
-
-    /**
-     *
-     */
 }
