@@ -230,6 +230,12 @@ export class DafnyServer {
         if (request.verb === DafnyVerbs.CounterExample || request.verb === DafnyVerbs.Verify) {
             this.statusbar.changeServerStatus(StatusString.Verifying);
         }
+        if (request.verb === DafnyVerbs.TacticsExpand || request.verb === DafnyVerbs.TacticsExpandAll) {
+            this.statusbar.changeServerStatus(StatusString.ExpandingTactic);
+        }
+        if (request.verb === DafnyVerbs.DeadAnnotationCheck) {
+            this.statusbar.changeServerStatus(StatusString.CheckingDeadAnnotations);
+        }
         const hasArgumentsDefined: boolean = request.args !== undefined && request.args !== null;
         const verificationArgs = hasArgumentsDefined ? request.args : [];
         const task: IVerificationTask = {

@@ -101,7 +101,11 @@ export class Statusbar {
         if (!this.serverpid) {
             this.currentDocumentStatucBar.text = StatusString.Pending;
         } else if (this.activeDocument && editor.document.uri.toString() === this.activeDocument.toString()) {
-            this.currentDocumentStatucBar.text = StatusString.Verifying;
+            if(this.serverStatus === StatusString.ExpandingTactic || this.serverStatus === StatusString.CheckingDeadAnnotations){
+                this.currentDocumentStatucBar.text = this.serverStatus;
+            } else {
+                this.currentDocumentStatucBar.text = StatusString.Verifying;
+            }
         } else if (this.queueContains(editor.document.uri.toString())) {
             this.currentDocumentStatucBar.text = StatusString.Queued;
         } else {

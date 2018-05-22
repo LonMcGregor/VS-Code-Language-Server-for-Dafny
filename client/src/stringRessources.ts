@@ -92,6 +92,8 @@ export class StatusString {
     public static ServerDown: string = "$(x) Server down";
     public static Queued: string = "$(watch) Queued";
     public static Pending: string = "$(issue-opened) Pending";
+    public static ExpandingTactic: string = "$(unfold) Expanding Tactics";
+    public static CheckingDeadAnnotations: string = "$(fold) Checking for Dead Annotations";
 }
 
 export class LanguageServerRequest {
