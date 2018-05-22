@@ -42,7 +42,7 @@ export class NotificationService {
 
     /**
      * Send the result of a check for dead annotations
-     * @param result array of the file uri, json string array of dare results
+     * @param result json stringified object matching {success:bool, message:string}
      */
     public sendDeadAnnotationResult(result: any){
         this.connection.sendNotification(LanguageServerNotification.DeadAnnotationCheck, result);

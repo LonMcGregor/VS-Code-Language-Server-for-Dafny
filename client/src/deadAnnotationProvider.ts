@@ -13,74 +13,68 @@ export class DeadAnnotationResult {
  * class for handling requests to cehck for dead annotations and for reporting results
  */
 export class DeadAnnotationProvider implements vscode.CodeActionProvider {
-
-    private results: { [filename: string]: DeadAnnotationResult[] } = {};
-
     /**
      * Provide commands for the given document and range.
      * @param document The document in which the command was invoked.
      * @param range The range for which the command was invoked.
-     * @param _ context Context carrying additional information. (unused)
+     * @param context Context carrying additional information
      * @param token A cancellation token.
      */
     public provideCodeActions(document: vscode.TextDocument,
-        actionRange: vscode.Range,
-         _: vscode.CodeActionContext,
+         range: vscode.Range,
+         context: vscode.CodeActionContext,
          token: vscode.CancellationToken):
          vscode.ProviderResult<vscode.Command[]> {
-        const filename = vscode.Uri.file(document.fileName).toString();
-        if(!this.results[filename]){
-            return null;
-        }
+        let hasAnnotationFixes = false;
         const commandList: vscode.Command[] = [];
-        const resultsForFile = this.results[filename];
-        const workspaceEditAllAtOnce = new vscode.WorkspaceEdit();
-        resultsForFile.forEach(result => {
-            if(token.isCancellationRequested){return null;}
-            const editStartPos = new vscode.Position(result.line-1, result.col-1);
-            const editEndPos = editStartPos.translate(0, result.length);
-            const editRange = new vscode.Range(editStartPos, editEndPos);
-            workspaceEditAllAtOnce.replace(vscode.Uri.file(document.fileName), editRange, result.replacement);
-            if(actionRange.contains(editRange)){
-                const workspaceEdit = new vscode.WorkspaceEdit();
-                workspaceEdit.replace(vscode.Uri.file(document.fileName), editRange, result.replacement);
-                //@ts-ignore: TS Doesn't Recognise CodeAction, though it does exist
-                const codeAction = new vscode.CodeAction(
-                    "Fix this Dead Annotation",
-                    //@ts-ignore: TS Doesn't Recognise CodeActionKind, though it does exist
-                    vscode.CodeActionKind.RefactorRewrite
-                )
-                codeAction.edit = workspaceEdit;
-                commandList.push(codeAction);
-            }
+        context.diagnostics.forEach(diagnostic => {
+            if(token.isCancellationRequested || diagnostic.code != "dare"){return;}
+            hasAnnotationFixes = true;
+            const workspaceEdit = new vscode.WorkspaceEdit();
+            const replacement = diagnostic.source === "Dafny VSCode DARe - Remove Annotation" ? "" : diagnostic.message.substr("Simplify to: ".length);
+            workspaceEdit.replace(vscode.Uri.file(document.fileName), diagnostic.range, replacement);
+            //@ts-ignore: TS Doesn't Recognise CodeAction, though it does exist
+            const codeAction = new vscode.CodeAction(
+                diagnostic.source,
+                //@ts-ignore: TS Doesn't Recognise CodeActionKind, though it does exist
+                vscode.CodeActionKind.RefactorRewrite
+            )
+            codeAction.edit = workspaceEdit;
+            codeAction.diagnostics = [diagnostic];
+            commandList.push(codeAction);
+        });
+
+        //@ts-ignore: TS Doesn't Recognise getDiagnostics, though it does exist
+        const allDiagsForFile: vscode.Diagnostic[] = vscode.languages.getDiagnostics(document.uri);
+        const workspaceEditAll = new vscode.WorkspaceEdit();
+        allDiagsForFile.forEach(diagnostic => {
+            if(token.isCancellationRequested || diagnostic.code != "dare"){return;}
+            hasAnnotationFixes = true;
+            const replacement = diagnostic.source === "Dafny VSCode DARe - Remove Annotation" ? "" : diagnostic.message.substr("Simplify to: ".length);
+            workspaceEditAll.replace(vscode.Uri.file(document.fileName), diagnostic.range, replacement);
         });
         //@ts-ignore: TS Doesn't Recognise CodeAction, though it does exist
-        const codeActionAllAOnce = new vscode.CodeAction(
-            "Fix All Dead Annotations in File",
+        const codeActionAll = new vscode.CodeAction(
+            "Fix all annotations in file",
             //@ts-ignore: TS Doesn't Recognise CodeActionKind, though it does exist
             vscode.CodeActionKind.RefactorRewrite
         )
-        codeActionAllAOnce.edit = workspaceEditAllAtOnce;
-        commandList.push(codeActionAllAOnce);
-        if(token.isCancellationRequested){return null;}
-        return commandList;
+        codeActionAll.edit = workspaceEditAll;
+        codeActionAll.diagnostics = allDiagsForFile;
+        commandList.push(codeActionAll);
+
+        return token.isCancellationRequested || !hasAnnotationFixes ? null : commandList;
     }
 
     constructor(){ }
 
     /**
      * Handle response from langauge server
-     * @param docPathName File checked
-     * @param json list of dead annotation replacements found
+     * @param result object {success:bool, message:string}
      */
-    public handleResponse(docPathName: string, result: DeadAnnotationResult[]){
-        if(result.length == 0){
-            return;
+    public handleResponse(result: any){
+        if(!result.success){
+            vscode.window.showErrorMessage(`Failed to check for dead annotations: ${result.message}`);
         }
-        if(!result[0].success){
-            vscode.window.showErrorMessage(`Failed to check for dead annotations: ${result[0].replacement}`);
-            return;
-        }
-        this.results[docPathName] = result;
     }
 }

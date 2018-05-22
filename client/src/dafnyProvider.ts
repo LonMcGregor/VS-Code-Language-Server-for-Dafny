@@ -61,7 +61,7 @@ export class DafnyClientProvider {
         languageServer.onNotification(LanguageServerNotification.DeadAnnotationCheck,
             (docPathName: string, json: string) => {
                 this.context.localQueue.remove(docPathName);
-                this.deadAnnotationProvider.handleResponse(docPathName, JSON.parse(json));
+                this.deadAnnotationProvider.handleResponse(JSON.parse(json));
                 this.dafnyStatusbar.update();
             });
         vsCodeContext.subscriptions.push(vscode.languages.registerCodeActionsProvider(
