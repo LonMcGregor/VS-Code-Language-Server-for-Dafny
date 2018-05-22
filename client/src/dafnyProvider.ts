@@ -143,7 +143,9 @@ export class DafnyClientProvider {
      * @param activeDocument the currently active text editor document
      */
     public toggleTacticVerification(activeDocument: vscode.TextDocument): void{
+        this.context.localQueue.add(activeDocument.uri.toString());
         this.sendDocument(activeDocument, LanguageServerNotification.TacticsToggle);
+        this.doVerify(activeDocument);
     }
 
     /**

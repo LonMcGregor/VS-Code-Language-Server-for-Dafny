@@ -43,6 +43,10 @@ export class TacticsService {
             const info = JSON.parse(jsonstring);
             if(info.length){
                 result = this.handleProcessList(info);
+            } else if(info.length == 0) {
+                const notactics = new TacticExpansionResult();
+                notactics.status = TacticExpanionStatus.NoTactic;
+                result = [notactics];
             } else {
                 result = [this.handleProcessSingle(info)];
             }
@@ -55,11 +59,6 @@ export class TacticsService {
      * @param info The list of expansions from the server
      */
     private handleProcessList(info): TacticExpansionResult[]{
-        if(info.length == 0){
-            const result = new TacticExpansionResult();
-            result.status = TacticExpanionStatus.NoTactic;
-            return [result];
-        }
         if(info[0].status !== "SUCCESS"){
             const result = new TacticExpansionResult();
             switch(info[0].status){
