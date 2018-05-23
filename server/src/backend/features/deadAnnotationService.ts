@@ -2,7 +2,7 @@
 
 import * as vscode from "vscode-languageserver";
 import { DafnyServer } from "../dafnyServer";
-import { DafnyVerbs, EnvironmentConfig } from "./../../strings/stringRessources";
+import { DafnyVerbs, EnvironmentConfig, ShortyString } from "./../../strings/stringRessources";
 import { NotificationService } from "../../notificationService";
 import { Context } from "../context";
 import { decodeBase64String } from "../../strings/stringEncoding";
@@ -97,10 +97,10 @@ export class DeadAnnotationService {
             const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
             const diagnostic = vscode.Diagnostic.create(
                 range,
-                result.replacement === "" ? "Annotation can be removed" : "Simplify to: " + result.replacement,
+                result.replacement === "" ? ShortyString.Remove : ShortyString.SimplifyPrefix + result.replacement,
                 vscode.DiagnosticSeverity.Information,
-                "dare",
-                result.replacement === "" ? "Dafny VSCode DARe - Remove Annotation" : "Dafny VSCode DARe - Simplify Annotation");
+                result.replacement === "" ? ShortyString.DiagnosticCodeRemove : ShortyString.DiagnosticCodeSimplify,
+                ShortyString.DiagnosticSource);
             diagnostics.push(diagnostic);
         });
         return diagnostics;
@@ -116,7 +116,7 @@ export class DeadAnnotationService {
         let diagnostics: vscode.Diagnostic[] = [];
         let response = {success: true, message: ""};
         if(!log || log.indexOf(EnvironmentConfig.DafnySuccess) < 0 || log.indexOf(EnvironmentConfig.DeadAnnotationsStart) < 0) {
-            response = {success: false, message: "Failed to read results from log"};
+            response = {success: false, message: ShortyString.LogParseFail};
         }
         const info = DeadAnnotationService.parseReport(log);
         if(info.error){

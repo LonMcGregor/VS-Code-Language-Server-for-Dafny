@@ -2,7 +2,7 @@
 import * as vscode from "vscode";
 import { TextDocumentItem } from "vscode-languageserver-types";
 import { LanguageClient } from "vscode-languageclient/lib/main";
-import { EnvironmentConfig, LanguageServerNotification } from "./stringRessources";
+import { EnvironmentConfig, LanguageServerNotification, TacticString } from "./stringRessources";
 
 export enum TacticExpanionStatus {
     NoTactic = 0,
@@ -32,7 +32,6 @@ export class TacticProvider {
      * @param activeEditor The editor where an expand request originated
      */
     public preview(activeEditor: vscode.TextEditor){
-        vscode.window.showInformationMessage(`Previewing the tactic at (${activeEditor.selection.active.line+1},${activeEditor.selection.active.character+1})...`);
         this.expand(activeEditor, LanguageServerNotification.TacticsPreview);
     }
 
@@ -41,7 +40,6 @@ export class TacticProvider {
      * @param activeEditor The editor where an expand request originated
      */
     public replace(activeEditor: vscode.TextEditor){
-        vscode.window.showInformationMessage(`Expanding & Replacing the tactic at (${activeEditor.selection.active.line+1},${activeEditor.selection.active.character+1})...`);
         this.expand(activeEditor, LanguageServerNotification.TacticsReplace);
     }
 
@@ -51,7 +49,6 @@ export class TacticProvider {
      * @param activeEditor The editor where an expand request originated
      */
     public replaceAll(activeEditor: vscode.TextEditor){
-        vscode.window.showInformationMessage(`Expanding all tactics in (${activeEditor.document.fileName})...`);
         this.expand(activeEditor, LanguageServerNotification.TacticsReplaceAll);
     }
 
@@ -75,7 +72,7 @@ export class TacticProvider {
             });
             this.languageServer.sendNotification(verb, tditem);
         } else {
-            vscode.window.showWarningMessage("Can't expand the tactic at this position.");
+            vscode.window.showWarningMessage(TacticString.CantExpand);
         }
     }
 
@@ -87,7 +84,7 @@ export class TacticProvider {
     public handleExpandResponse(docPathName: string, tacticResults: TacticExpansionResult[], isEdit: boolean){
         switch(tacticResults[0].status){
             case TacticExpanionStatus.NoTactic:
-                vscode.window.showInformationMessage("No tactic to expand at this position");
+                vscode.window.showInformationMessage(TacticString.NoTactic);
                 return;
             case TacticExpanionStatus.Success:
                 if(isEdit){
@@ -97,11 +94,11 @@ export class TacticProvider {
                 }
                 return;
             case TacticExpanionStatus.Unresolved:
-                vscode.window.showWarningMessage("Program needs to be re-verified before expanding tactic");
+                vscode.window.showWarningMessage(TacticString.MustReVerify);
                 return;
             default:
-                vscode.window.showErrorMessage("Dafny failed to run during expansion of tactic");
-                console.error("Dafny failed to run during expansion of tactic" + tacticResults[0].expansion)
+                vscode.window.showErrorMessage(TacticString.DafnyFailed);
+                console.error(TacticString.DafnyFailed + " - " + tacticResults[0].expansion)
         }
     }
 
@@ -120,7 +117,6 @@ export class TacticProvider {
                     editor.document.positionAt(tacticResult.endPosition)
                 );
                 editBuilder.replace(editRange, tacticResult.expansion);
-                vscode.window.showInformationMessage("Expansion Succesful");
             });
         });
     }
@@ -132,11 +128,11 @@ export class TacticProvider {
      */
     private handleSuccessPreview(docPathName: string, tacticResults: TacticExpansionResult[]){
         if(!this.tacticsChannel){
-            this.tacticsChannel = vscode.window.createOutputChannel("Tactics");
+            this.tacticsChannel = vscode.window.createOutputChannel(TacticString.OutputChannelName);
         }
         this.tacticsChannel.show(true);
         tacticResults.forEach(tacticResult => {
-            this.tacticsChannel.appendLine(`[${docPathName}] Result of expansion at char ${tacticResult.startPosition}`);
+            this.tacticsChannel.appendLine(`[${docPathName}]` + TacticString.OutputChannelMessage + tacticResult.startPosition);
             this.tacticsChannel.append(tacticResult.expansion);
             this.tacticsChannel.appendLine("");
         });

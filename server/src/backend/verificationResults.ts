@@ -5,7 +5,7 @@ import * as vscode from "vscode-languageserver";
 import { NotificationService } from "../notificationService";
 
 import { Verification } from "../strings/regexRessources";
-import { EnvironmentConfig, Severity } from "../strings/stringRessources";
+import { EnvironmentConfig, Severity, TacticString } from "../strings/stringRessources";
 import { VerificationRequest } from "./verificationRequest";
 import { parse } from "path";
 import { decodeBase64String } from "../strings/stringEncoding";
@@ -90,7 +90,7 @@ export class VerificationResults {
         const diagPositionEnd: vscode.Position = vscode.Position.create(reportInfo["Tok"]["line"], reportInfo["Tok"]["col"]+1);
         const range: vscode.Range = vscode.Range.create(diagPositionStart, diagPositionEnd);
         const diagMsg: string = reportInfo["Msg"];
-        return vscode.Diagnostic.create(range, diagMsg, vscode.DiagnosticSeverity.Error, "tactics", "Dafny VSCode");
+        return vscode.Diagnostic.create(range, diagMsg, vscode.DiagnosticSeverity.Error, TacticString.DiagnosticCode, TacticString.DiagnosticSource);
     }
 
     /**

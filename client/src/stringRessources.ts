@@ -124,3 +124,27 @@ export class LanguageServerNotification {
     public static TacticsReplaceAll: string = "tacticsReplaceAll";
     public static DeadAnnotationCheck: string = "deadAnnotationCheck";
 }
+
+export class TacticString {
+    public static DiagnosticCode: string = "tactics";
+    public static DiagnosticSource: string = "Dafny VSCode (Tactics)";
+    public static CantExpand: string = "Can't expand the tactic at this position.";
+    public static NoTactic: string = "No tactic to expand at this position";
+    public static MustReVerify: string = "Program needs to be re-verified before expanding tactic";
+    public static DafnyFailed: string = "Dafny failed to run during expansion of tactic";
+    public static OutputChannelName: string = "Tactics";
+    public static OutputChannelMessage: string = " Result of expansion at char ";
+}
+
+export class ShortyString {
+    public static DiagnosticCodeRemove: string = "shorty_r";
+    public static DiagnosticCodeSimplify: string = "shorty_s";
+    public static DiagnosticSource: string = "Dafny VSCode (Shorty)";
+    public static Remove: string = "Annotation can be removed";
+    public static SimplifyPrefix: string = "Annotation can simplify to: ";
+    public static LogParseFail: string = "Failed to read results from shorty log";
+    public static ServerFailPrefix: string = "Failed to check for dead annotations: ";
+    public static MenuRemove: string = "Remove this annotation";
+    public static MenuSimplify: string = "Simplify this annotation";
+    public static MenuFixAll: string = "Fix all annotations in file";
+}

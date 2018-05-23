@@ -233,7 +233,7 @@
             },
             {
                 "command": "dafny.checkDeadAnnotations",
-                "title": "Dafny: Run check for dead annotations using DARe"
+                "title": "Dafny: Run check for dead annotations using Shorty"
             }
         ]
     },
