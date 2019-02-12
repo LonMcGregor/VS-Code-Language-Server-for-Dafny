@@ -1,4 +1,3 @@
-
 datatype Dummy = A | B
 datatype Dummy2 = A2 | B2
 
@@ -18,14 +17,14 @@ tactic tac(b: term)
 {
 	assert false;
 	assert true;
-	dummyTac(b);	
+	dummyTac(b);
 }
 
 tactic dummyTac (c: term)
 {
 	tmatch c {
     tvar vs := tactic.input;
-    tvar ls := tactic.lemmas;	
+    tvar ls := tactic.lemmas;
     explore(ls, vs);
 	}
 }

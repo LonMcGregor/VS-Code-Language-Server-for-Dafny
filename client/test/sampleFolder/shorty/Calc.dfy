@@ -19,7 +19,7 @@ lemma prop_add_comm(x: natr, y: natr)
   ensures add(x, y) == add(y, x)
 {
   match x {
-    case Zero => 
+    case Zero =>
       calc {
         add(Zero, y);
         ==
@@ -37,7 +37,7 @@ lemma prop_add_comm(x: natr, y: natr)
         Succ(add(x', y));
         =={ prop_add_comm(x', y); }
         Succ(add(y, x'));
-        == 
+        ==
         add(y, Succ(x'));
       }
   }

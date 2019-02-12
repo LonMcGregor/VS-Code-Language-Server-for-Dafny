@@ -3,3 +3,7 @@
 {
   if n < 2 then n else Fibonacci(n+2) + Fibonacci(n+1)
 }
+
+method Main(){
+  print Fibonacci(4);
+}
