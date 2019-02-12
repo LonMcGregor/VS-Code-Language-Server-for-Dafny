@@ -1,0 +1,103 @@
+diff --git a/Binaries/System.Collections.Immutable.dll b/Binaries/System.Collections.Immutable.dll
+index bcf23fe5..ce6fc0e8 100644
+Binary files a/Binaries/System.Collections.Immutable.dll and b/Binaries/System.Collections.Immutable.dll differ
+diff --git a/Source/DafnyServer/DafnyHelper.cs b/Source/DafnyServer/DafnyHelper.cs
+index 32a7da19..2aa57fd2 100644
+--- a/Source/DafnyServer/DafnyHelper.cs
++++ b/Source/DafnyServer/DafnyHelper.cs
+@@ -29,22 +29,30 @@ namespace Microsoft.Dafny {
+   }
+ 
+   class TacticsConsolePrinter {
+-    private readonly List<ErrorInformation> tacticErrors;
++    private readonly List<Tacny.CompoundErrorInformation> tacticErrors;
++    private readonly List<ErrorInformation> allErrors;
+ 
+     public TacticsConsolePrinter() {
+-      this.tacticErrors = new List<ErrorInformation>();
++      this.tacticErrors = new List<Tacny.CompoundErrorInformation>();
++      this.allErrors = new List<ErrorInformation>();
+     }
+ 
+     public void ReporterDelegate(ErrorInformation errInfo) {
+-      this.tacticErrors.Add(errInfo);
++      var tacticErrorInfo = errInfo as Microsoft.Dafny.Tacny.CompoundErrorInformation;
++      if (tacticErrorInfo != null) {
++        this.tacticErrors.Add(tacticErrorInfo);
++      } else {
++        this.allErrors.Add(errInfo);
++      }
+     }
+ 
+-    public void ReportAll() {
++    public bool ReportAll() {
+       if(tacticErrors.Count == 0) {
+         Console.WriteLine("TACTICS_START [] TACTICS_END");
+       } else {
+         Console.WriteLine("TACTICS_START " + ConvertToJson(this.tacticErrors) + " TACTICS_END");
+       }
++      return true;
+     }
+ 
+     private static string ConvertToJson<T>(T data) {
+@@ -145,7 +153,7 @@ namespace Microsoft.Dafny {
+ 
+     public bool Verify() {
+       ServerUtils.ApplyArgs(args, reporter);
+-      return Parse() && Resolve() && Translate() && Boogie();
++      return Parse() && Resolve() && Translate() && Boogie() && tacticsReporter.ReportAll();
+     }
+ 
+     private bool Parse() {
+@@ -171,7 +179,6 @@ namespace Microsoft.Dafny {
+       boogiePrograms = Translator.Translate(dafnyProgram,reporter, resolver,
+           new Translator.TranslatorFlags() { InsertChecksums = true, UniqueIdPrefix = fname },
+           tacticsReporter.ReporterDelegate); // FIXME how are translation errors reported?
+-      tacticsReporter.ReportAll();
+       return true;
+     }
+ 
+@@ -183,7 +190,7 @@ namespace Microsoft.Dafny {
+         ExecutionEngine.Inline(boogieProgram);
+ 
+         //NOTE: We could capture errors instead of printing them (pass a delegate instead of null)
+-        switch (ExecutionEngine.InferAndVerify(boogieProgram, new PipelineStatistics(), "ServerProgram_" + moduleName, null, DateTime.UtcNow.Ticks.ToString())) {
++        switch (ExecutionEngine.InferAndVerify(boogieProgram, new PipelineStatistics(), "ServerProgram_" + moduleName, tacticsReporter.ReporterDelegate, DateTime.UtcNow.Ticks.ToString())) {
+           case PipelineOutcome.Done:
+           case PipelineOutcome.VerificationCompleted:
+             return true;
+diff --git a/Source/Dare/Dare.cs b/Source/Dare/Dare.cs
+index 533ba1f4..5168f679 100644
+--- a/Source/Dare/Dare.cs
++++ b/Source/Dare/Dare.cs
+@@ -524,28 +524,14 @@ namespace Dare {
+     public string TypeOfRemovable { get; private set; }
+     public object Replace { get; private set; }
+ 
+-    public DareResult(Bpl.IToken startToken, Bpl.IToken endToken, string typeOfRemovable) {
+-      StartTok = startToken;
+-      Length = endToken.pos - startToken.pos;
+-      TypeOfRemovable = typeOfRemovable;
+-      Replace = null;
+-    }
+-
+-    public DareResult(Bpl.IToken startToken, Bpl.IToken endToken, string typeOfRemovable, object replace) {
++    public DareResult(Bpl.IToken startToken, Bpl.IToken endToken, string typeOfRemovable, object replace = null) {
+       StartTok = startToken;
+       Length = endToken.pos - startToken.pos;
+       TypeOfRemovable = typeOfRemovable;
+       Replace = replace;
+     }
+ 
+-    public DareResult(Bpl.IToken startToken, int length, string typeOfRemovable) {
+-      StartTok = startToken;
+-      Length = length;
+-      TypeOfRemovable = typeOfRemovable;
+-      Replace = null;
+-    }
+-
+-    public DareResult(Bpl.IToken startToken, int length, string typeOfRemovable, object replace) {
++    public DareResult(Bpl.IToken startToken, int length, string typeOfRemovable, object replace = null) {
+       StartTok = startToken;
+       Length = length;
+       TypeOfRemovable = typeOfRemovable;
